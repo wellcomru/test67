@@ -32,7 +32,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # --------------------- КОНСТАНТЫ ---------------------
-APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqp0YYSSXL5eNoC3HFYJPo8QMVE4hVxHBeN9nes6dtvo8dpSFPciZEcijHTcYTgj8K/exec"  # <-- Укажите ваш URL
+APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLP6DDjRi6R6UEO4PAv1e5MM6Wy42BeTVnqGqwIvO23sghquPqtRzMtzlJrVznQpqb/exec"  # <-- Укажите ваш URL
 BOT_TOKEN = "7507339261:AAFCLBJT7m8jHMPxKcpTqpWkMaXQbbwWRks"                                            # <-- Укажите ваш токен
 
 GROUP_CHAT_ID = -1002429928901      # ID вашей группы/супергруппы
