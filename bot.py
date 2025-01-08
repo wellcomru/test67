@@ -2,6 +2,7 @@ import logging
 import asyncio
 import aiohttp
 import re
+import os
 from typing import Dict
 
 from telegram import (
@@ -33,7 +34,7 @@ logger.addHandler(handler)
 
 # --------------------- КОНСТАНТЫ ---------------------
 APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLP6DDjRi6R6UEO4PAv1e5MM6Wy42BeTVnqGqwIvO23sghquPqtRzMtzlJrVznQpqb/exec"  # <-- Укажите ваш URL
-BOT_TOKEN = "7507339261:AAFCLBJT7m8jHMPxKcpTqpWkMaXQbbwWRks"                                            # <-- Укажите ваш токен
+BOT_TOKEN = "7507339261:AAFCLBJT7m8jHMPxKcpTqpWkMaXQbbwWRks"  # <-- Укажите ваш токен
 
 GROUP_CHAT_ID = -1002429928901      # ID вашей группы/супергруппы
 ADMIN_CHAT_IDS = [418838097, 216931773]  # Список chat_id админов
@@ -120,7 +121,7 @@ RULES_TEXT = (
 WELCOME_TEXT = (
     "Добро пожаловать в комьюнити Event_Irkutsk!\n"
     "Если наш чат окажется для Вас полезным и Вы будете регулярно находить заказы, зарабатывать и решать свои вопросы, "
-    "мы будем признательны Вашей финансовой поддержке в любом эквиваленте. Ваши донаты позволят нам "
+    "мы будем признательны Вашей финансовой поддержке в любом эквивалente. Ваши донаты позволят нам "
     "осуществлять администрирование площадки, а также организовывать различные события для индустрии.\n"
     "⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️\n"
     "ВЫ МОЖЕТЕ ПЕРЕВЕСТИ ЛЮБУЮ СУММУ ПО ССЫЛКЕ\n"
@@ -756,7 +757,26 @@ def main():
 
     application.add_error_handler(error_handler)
 
-    application.run_polling()
+    # --------------------- РАБОТА ЧЕРЕЗ ВЕБХУК ---------------------
+    # Для Render (или любого другого сервиса), нам нужен порт из окружения
+    PORT = int(os.environ.get("PORT", 8443))
+
+    # Путь до вебхука (обычно это просто /<BOT_TOKEN>):
+    WEBHOOK_PATH = f"/{BOT_TOKEN}"
+
+    # Если вы запускаетесь на Render, у вас будет RENDER_EXTERNAL_HOSTNAME
+    # Пример: <имя-приложения>.onrender.com
+    render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "your-app-name.onrender.com")
+    WEBHOOK_URL = f"https://{render_hostname}{WEBHOOK_PATH}"
+
+    # Запускаем приложение через вебхук
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=BOT_TOKEN,
+        webhook_url=WEBHOOK_URL
+    )
+
     logger.info("Бот остановлен.")
 
 if __name__ == "__main__":
