@@ -774,7 +774,7 @@ def main():
         listen="0.0.0.0",
         port=PORT,
         url_path=BOT_TOKEN,
-        webhook_url=WEBHOOK_URL
+        webhook_url=https://test67-1.onrender.com/7507339261:AAFCLBJT7m8jHMPxKcpTqpWkMaXQbbwWRks
     )
 
     logger.info("Бот остановлен.")
