@@ -36,7 +36,7 @@ logger.addHandler(handler)
 APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLP6DDjRi6R6UEO4PAv1e5MM6Wy42BeTVnqGqwIvO23sghquPqtRzMtzlJrVznQpqb/exec"  # <-- Укажите ваш URL
 BOT_TOKEN = "7507339261:AAFCLBJT7m8jHMPxKcpTqpWkMaXQbbwWRks"  # <-- Укажите ваш токен
 
-GROUP_CHAT_ID = -1002429928901      # ID вашей группы/супергруппы
+GROUP_CHAT_ID = -1002438237062      # ID вашей группы/супергруппы
 ADMIN_CHAT_IDS = [216931773, 713149135]  # Список chat_id админов
 
 FIELDS = [
