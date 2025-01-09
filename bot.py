@@ -234,7 +234,7 @@ async def handle_group_message(update: Update, context: CallbackContext):
             text=(
                 f"Пользователь {mention_name}, вы ещё не авторизованы в чате.\n"
                 f"Пройдите авторизацию через бота "
-                f'<a href="t.me/Event_Irkutsk_Bot">@antyspamevent_bot</a>.'
+                f'<a href="t.me/Event_Irkutsk_Bot">@Event_Irkutsk_Bot</a>.'
             ),
             parse_mode="HTML",
             message_thread_id=update.message.message_thread_id
