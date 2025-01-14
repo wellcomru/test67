@@ -151,49 +151,54 @@ async def is_user_in_gsheets(user_id: int) -> bool:
     return data.get("authorized", False)
 
 def check_spam(message_text: str) -> bool:
-    spam_patterns = [
-        r"заработок\sбез\sвложений",
-        r"быстрые\sденьги",
-        r"финансовая\sпирамида",
-        r"раздача\sденег",
-        r"продвижение\sканала",
-        r"накрутка",
-        r"пассивный\sдоход",
-        r"заработок\sбез\sвложений",
-        r"быстрые\sденьги",
-        r"финансовая\sпирамида",
-        r"раздача\sденег",
-        r"продвижение\sканала",
-        r"накрутка",
-        r"пассивный\sдоход",
-        r"сво",
-        r"путин",
-        r"заработай\sпрямо\sсейчас",
-        r"доход\sна\sавтомате",
-        r"быстрая\sнакрутка",
-        r"схемы\sзаработка",
-        r"продажа\sбазы\sконтактов",
-        r"легкие\sденьги",
-        r"вложи\sи\sзаработай",
-        r"получи\sденьги\sпрямо\sсейчас",
-        r"криптовалюта\sбез\sвложений",
-        r"финансовая\sсвобода",
-        r"автоматический\sзаработок",
-        r"халява",
-        r"раскрутка\sаккаунта",
-        r"заработок\sбез\sусилий",
-        r"в\sтренды\sютуб",
-        r"мошенничество",
-        r"пассивный\sдоход\s2023",
-        r"вывод\sсредств\sза\s5\sминут",
-        r"беспроигрышные\sставки",
-        r"скачать\sпрограмму\sдля\sзаработка",
-        r"работа\sна\sдому",
-        r"деньги\sбез\sобязательств",
-        r"деньги\sздесь\sи\sсейчас"
+    """
+    Проверяем, содержится ли в сообщении хотя бы одно из строго заданных слов/фраз.
+    Используем границы слова (\b), чтобы отсеять частичные совпадения.
+    """
+    # Список точных “спам-слов/фраз”, на которые реагируем
+    spam_phrases = [
+        "заработок без вложений",
+        "быстрые деньги",
+        "финансовая пирамида",
+        "раздача денег",
+        "продвижение канала",
+        "накрутка",
+        "пассивный доход",
+        "сво",
+        "путин",
+        "заработай прямо сейчас",
+        "доход на автомате",
+        "быстрая накрутка",
+        "схемы заработка",
+        "продажа базы контактов",
+        "легкие деньги",
+        "вложи и заработай",
+        "получи деньги прямо сейчас",
+        "криптовалюта без вложений",
+        "финансовая свобода",
+        "автоматический заработок",
+        "халява",
+        "раскрутка аккаунта",
+        "заработок без усилий",
+        "в тренды ютуб",
+        "мошенничество",
+        "пассивный доход 2023",
+        "вывод средств за 5 минут",
+        "беспроигрышные ставки",
+        "скачать программу для заработка",
+        "работа на дому",
+        "деньги без обязательств",
+        "деньги здесь и сейчас"
     ]
+
     msg_lower = message_text.lower()
-    return any(re.search(pattern, msg_lower) for pattern in spam_patterns)
+
+    for phrase in spam_phrases:
+        # Каждый phrase проверяем на наличие как отдельной фразы (благодаря \b … \b)
+        pattern = r"\b" + re.escape(phrase) + r"\b"
+        if re.search(pattern, msg_lower):
+            return True
+    return False
 
 # --------------------- УДАЛЕНИЕ СООБЩЕНИЙ ---------------------
 async def delete_message_job(context: CallbackContext):
@@ -208,6 +213,10 @@ async def delete_message_job(context: CallbackContext):
 
 # --------------------- ОБРАБОТЧИКИ СООБЩЕНИЙ ---------------------
 async def text_handler(update: Update, context: CallbackContext):
+    # 1) Игнорируем отредактированные сообщения или реакции (любые варианты, где нет "нового" текста):
+    if update.edited_message or not update.message or not update.message.text:
+        return
+
     if update.effective_chat.type in ("group", "supergroup"):
         await handle_group_message(update, context)
     elif update.effective_chat.type == "private":
@@ -247,6 +256,7 @@ async def handle_group_message(update: Update, context: CallbackContext):
         )
         return
 
+    # Проверка на спам
     if check_spam(text):
         try:
             await update.message.delete()
@@ -472,7 +482,7 @@ async def callback_handler(update: Update, context: CallbackContext):
 
     # --- Обработка нажатия "Начать регистрацию" после приветствия ---
     if state == "greeting_shown" and data == "start_registration":
-        # Переходим к отображению правил (ранее было в /start)
+        # Переходим к отображению правил
         rules_text = RULES_TEXT.replace("{name}", context.user_data["name"])
         await query.message.reply_text(
             rules_text,
@@ -737,12 +747,9 @@ async def send_message(chat_id: int, text: str, context: CallbackContext):
 
 # --------------------- ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ОШИБОК ---------------------
 async def error_handler(update: object, context: CallbackContext):
+    # Убираем видимое сообщение для пользователей, но логируем в консоль/файл
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
-    if isinstance(update, Update):
-        try:
-            await update.effective_message.reply_text("Произошла ошибка при обработке вашего запроса.")
-        except TelegramError:
-            pass
+    # Раньше здесь отправляли сообщение «Произошла ошибка при обработке вашего запроса» — теперь убрали.
 
 # --------------------- ГЛАВНАЯ ФУНКЦИЯ ---------------------
 def main():
